@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Chat (Encrypted Keys, No Input)</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <style>
+        /* (CSS - Light/Dark Mode Styles, Toggle Switch - same as previous response, included for completeness) */
+        body { display: flex; min-height: 100vh; flex-direction: column; transition: background-color 0.3s ease;  }
+        main { flex: 1 0 auto; padding: 20px; }
+        .ai-selector { margin-bottom: 20px; }
+        .chat-container { border: 1px solid #ddd; border-radius: 8px; padding: 20px; background-color: white; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); transition: background-color 0.3s ease, border-color 0.3s ease; }
+        .chat-messages { max-height: 400px; overflow-y: auto; margin-bottom: 20px; padding-right: 10px; }
+        .message { margin-bottom: 10px; padding: 10px; border-radius: 5px; word-wrap: break-word; transition: background-color 0.3s ease; }
+        .user-message { background-color: #e0e0e0; margin-left: auto; max-width: 70%; }
+        .ai-message { background-color: #f0f0f0; max-width: 70%; }
+        .input-field { margin-bottom: 0; }
+        .grasshopper-container { text-align: center; margin-bottom: 20px; transition: opacity 0.5s ease-in-out; }
+        .grasshopper-hidden { opacity: 0; }
+        .btn { transition: background-color 0.3s ease; }
+        .btn:hover {  }
+        .input-field input[type=text]:focus+label, .input-field textarea:focus+label {  }
+        .input-field input[type=text]:focus, .input-field textarea:focus {  }
+        .select-wrapper input.select-dropdown:focus {  }
+        .chat-messages::-webkit-scrollbar { width: 8px; }
+        .chat-messages::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; transition: background-color 0.3s ease; }
+        .chat-messages::-webkit-scrollbar-thumb { background: #888; border-radius: 4px; transition: background-color 0.3s ease; }
+        .chat-messages::-webkit-scrollbar-thumb:hover { background: #555; }
+        #messageInput { resize: vertical; min-height: 50px; max-height: 150px; }
+        .loading-dots { display: inline-block; width: 50px; text-align: left; }
+        .loading-dots span { display: inline-block; width: 8px; height: 8px; border-radius: 50%;  margin: 0 2px; opacity: 0; animation: loading 1.4s infinite; }
+        .loading-dots span:nth-child(2) { animation-delay: 0.2s; }
+        .loading-dots span:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes loading { 0%, 100% { opacity: 0; } 50% { opacity: 1; } }
+        .api-key-inputs { margin-bottom: 1rem; }
+        .api-key-input { margin-bottom: 0.5rem; }
+        .hidden { display: none; }
+
+        /* --- Light Mode Styles --- */
+        body.light-mode { background-color: #f5f5f5; }
+        body.light-mode .chat-container { background-color: white; border-color: #ddd; }
+        body.light-mode .user-message { background-color: #e0e0e0; }
+        body.light-mode .ai-message { background-color: #f0f0f0; }
+        body.light-mode .chat-messages::-webkit-scrollbar-track { background: #f1f1f1; }
+        body.light-mode .chat-messages::-webkit-scrollbar-thumb { background: #888; }
+        body.light-mode .chat-messages::-webkit-scrollbar-thumb:hover { background: #555; }
+        body.light-mode nav { background-color: #673ab7; }
+        body.light-mode .btn { background-color: #9575cd; }
+        body.light-mode .btn:hover { background-color: #7e57c2; }
+        body.light-mode .input-field input[type=text]:focus+label, body.light-mode .input-field textarea:focus+label { color: #673ab7 !important; }
+        body.light-mode .input-field input[type=text]:focus, body.light-mode .input-field textarea:focus { border-bottom: 1px solid #673ab7 !important; box-shadow: 0 1px 0 0 #673ab7 !important; }
+        body.light-mode .select-wrapper input.select-dropdown:focus { border-bottom: 1px solid #673ab7 !important; box-shadow: 0 1px 0 0 #673ab7 !important; }
+        body.light-mode .loading-dots span { background-color: #673ab7;}
+
+
+        /* --- Dark Mode Styles --- */
+        body.dark-mode { background-color: #212121; color: #eee; }
+        body.dark-mode .chat-container { background-color: #424242; border-color: #616161; }
+        body.dark-mode .user-message { background-color: #616161; color: #fff; }
+        body.dark-mode .ai-message { background-color: #757575; color: #fff; }
+        body.dark-mode .chat-messages::-webkit-scrollbar-track { background: #424242; }
+        body.dark-mode .chat-messages::-webkit-scrollbar-thumb { background: #bbb; }
+        body.dark-mode .chat-messages::-webkit-scrollbar-thumb:hover { background: #999; }
+        body.dark-mode nav { background-color: #311b92; }
+        body.dark-mode .btn { background-color: #5e35b1; }
+        body.dark-mode .btn:hover { background-color: #4527a0; }
+        body.dark-mode .input-field input[type=text]:focus+label, body.dark-mode .input-field textarea:focus+label, body.dark-mode label { color: #9575cd !important; }
+        body.dark-mode .input-field input[type=text]:focus, body.dark-mode .input-field textarea:focus, body.dark-mode .select-wrapper input.select-dropdown:focus{ border-bottom: 1px solid #9575cd !important; box-shadow: 0 1px 0 0 #9575cd !important; }
+        body.dark-mode .loading-dots span{ background-color: #9575cd;}
+
+        /* --- Toggle Switch Styles --- */
+        .switch { position: relative; display: inline-block; width: 60px; height: 34px; margin-bottom: 1rem; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
+        .slider:before { position: absolute; content: ""; height: 26px; width: 26px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: #673ab7; }
+        input:focus + .slider { box-shadow: 0 0 1px #673ab7; }
+        input:checked + .slider:before { transform: translateX(26px); }
+    </style>
+</head>
+<body class="light-mode">
+    <nav>
+        <div class="nav-wrapper">
+            <a href="#!" class="brand-logo center">AI Chat</a>
+            <ul class="right">
+                <li>
+                    <div class="switch">
+                        <label>Light<input type="checkbox" id="darkModeToggle"><span class="slider"></span>Dark</label>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </nav>
+    <main>
+        <div class="container">
+            <div class="row ai-selector">
+                <div class="col s12">
+                    <select id="aiSelect" class="browser-default">
+                        <option value="gemini" selected>Google Gemini 1.5 Pro</option>
+                        <option value="openai">OpenAI (ChatGPT)</option>
+                        <option value="claude">Anthropic Claude</option>
+                    </select>
+                    <label>Select AI</label>
+                </div>
+            </div>
+            <!-- Remove API key inputs -->
+             <div class="row">
+                <div class="col s12">
+                    <div class="grasshopper-container">
+                        <i class="material-icons" style="font-size: 48px;">emoji_nature</i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row chat-container">
+                <div class="col s12 chat-messages" id="chatMessages"></div>
+                <div class="col s12">
+                    <div class="input-field">
+                        <textarea id="messageInput" class="materialize-textarea"></textarea>
+                        <label for="messageInput">Your message</label>
+                    </div>
+                </div>
+                <div class="col s12">
+                    <button class="btn waves-effect waves-light" id="sendButton">Send <i class="material-icons right">send</i></button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <script>
+document.addEventListener('DOMContentLoaded', function() {
+    const aiSelect = document.getElementById('aiSelect');
+    const messageInput = document.getElementById('messageInput');
+    const sendButton = document.getElementById('sendButton');
+    const chatMessages = document.getElementById('chatMessages');
+    const grasshopperContainer = document.querySelector('.grasshopper-container');
+    const darkModeToggle = document.getElementById('darkModeToggle');
+    let messageCount = 0;
+
+    // --- Encryption/Decryption (Simple XOR - for demonstration only!) ---
+    function xorCipher(str, key) {
+        let result = "";
+        for (let i = 0; i < str.length; i++) {
+            result += String.fromCharCode(str.charCodeAt(i) ^ key.charCodeAt(i % key.length));
+        }
+        return result;
+    }
+
+    // --- Encrypted API Keys (Replace with your *encrypted* keys) ---
+    const encryptionKey = "MySuperSecretKey"; //  Choose a strong, long key!
+    // Encrypt using xorCipher("YOUR_REAL_API_KEY", encryptionKey)
+    // IMPORTANT:  This is just a *demonstration* of a simple encryption
+    // method. It is NOT secure for production use.
+      const encryptedGeminiApiKey = xorCipher("AIzaSyDvLVtMdrL3tpwgGdib-1XzKldKQsAAt98", encryptionKey);
+      const encryptedOpenaiApiKey = xorCipher("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", encryptionKey);
+      const encryptedClaudeApiKey = xorCipher("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", encryptionKey);
+
+    // Load saved theme
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme) {
+        document.body.classList.add(savedTheme);
+        darkModeToggle.checked = savedTheme === 'dark-mode';
+    }
+
+    // Dark Mode Toggle
+    darkModeToggle.addEventListener('change', () => {
+        document.body.classList.toggle('dark-mode', darkModeToggle.checked);
+        document.body.classList.toggle('light-mode', !darkModeToggle.checked);
+        localStorage.setItem('theme', darkModeToggle.checked ? 'dark-mode' : 'light-mode');
+    });
+
+    sendButton.addEventListener('click', sendMessage);
+    messageInput.addEventListener('keypress', function(event) {
+        if (event.key === 'Enter' && !event.shiftKey) {
+            event.preventDefault();
+            sendMessage();
+        }
+    });
+
+    function sendMessage() {
+        const messageText = messageInput.value.trim();
+        const selectedAI = aiSelect.value;
+
+        if (messageText) {
+            messageCount++;
+            if (messageCount === 1) {
+                grasshopperContainer.classList.add('grasshopper-hidden');
+            }
+            appendMessage(messageText, 'user');
+            messageInput.value = '';
+
+            if (selectedAI === 'gemini') {
+                getGeminiResponse(messageText);
+            } else if (selectedAI === 'openai') {
+                getOpenAIResponse(messageText);
+            } else if (selectedAI === 'claude') {
+                getClaudeResponse(messageText);
+            }
+        }
+    }
+
+    function appendMessage(text, sender) {
+        const messageDiv = document.createElement('div');
+        messageDiv.classList.add('message', `${sender}-message`);
+        messageDiv.textContent = text;
+        chatMessages.appendChild(messageDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    async function getGeminiResponse(message) {
+        const loadingDiv = document.createElement('div');
+        loadingDiv.classList.add('message', 'ai-message');
+        loadingDiv.innerHTML = `<div class="loading-dots"><span></span><span></span><span></span></div>`;
+        chatMessages.appendChild(loadingDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+
+        try {
+            const apiKey = xorCipher(encryptedGeminiApiKey, encryptionKey); // Decrypt
+            const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro-002:generateContent?key=' + apiKey, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ contents: [{ parts: [{ text: message }] }] })
+            });
+
+           if (!response.ok) {
+                const errorData = await response.json();
+                let errorMessage = `Gemini API error: ${response.status}`;
+                if (errorData && errorData.error && errorData.error.message) {
+                    errorMessage += ` - ${errorData.error.message}`;
+                }
+                throw new Error(errorMessage);
+            }
+
+            const data = await response.json();
+            let aiResponse;
+            if (data.candidates && data.candidates.length > 0 && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts.length > 0) {
+                aiResponse = data.candidates[0].content.parts[0].text;
+            } else {
+                aiResponse = "No response from Gemini (unexpected response format).";
+            }
+
+            loadingDiv.remove();
+            appendMessage(aiResponse, 'ai');
+
+        } catch (error) {
+            loadingDiv.remove();
+            console.error('Error fetching from Gemini:', error);
+            appendMessage(`Error: ${error.message}`, 'ai');
+        }
+    }
+
+    async function getOpenAIResponse(message) {
+        const loadingDiv = document.createElement('div');
+        loadingDiv.classList.add('message', 'ai-message');
+        loadingDiv.innerHTML = `<div class="loading-dots"><span></span><span></span><span></span></div>`;
+        chatMessages.appendChild(loadingDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+
+        try {
+            const apiKey = xorCipher(encryptedOpenaiApiKey, encryptionKey); // Decrypt
+            const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${apiKey}`
+                },
+                body: JSON.stringify({
+                    model: "gpt-3.5-turbo",
+                    messages: [
+                        {"role": "system", "content": "You are a helpful assistant."},
+                        {"role": "user", "content": message}
+                    ]
+                })
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(`OpenAI API error: ${response.status} - ${errorData.error.message}`);
+            }
+
+            const data = await response.json();
+            const aiResponse = data.choices[0].message.content;
+            loadingDiv.remove();
+            appendMessage(aiResponse, 'ai');
+
+        } catch (error) {
+            loadingDiv.remove();
+            console.error('Error fetching from OpenAI:', error);
+            appendMessage(`Error: ${error.message}.  Make sure your API key is correct and you have usage credits.`, 'ai');
+        }
+    }
+    async function getClaudeResponse(message) {
+      const loadingDiv = document.createElement('div');
+        loadingDiv.classList.add('message', 'ai-message');
+        loadingDiv.innerHTML = `<div class="loading-dots"><span></span><span></span><span></span></div>`;
+        chatMessages.appendChild(loadingDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+
+        try {
+            const apiKey = xorCipher(encryptedClaudeApiKey, encryptionKey);  //Decrypt
+            const response = await fetch("https://api.anthropic.com/v1/messages", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "x-api-key": apiKey,
+                    "anthropic-version": "2023-06-01"
+                },
+                body: JSON.stringify({
+                    model: "claude-3-opus-20240229",
+                    max_tokens: 1024,
+                    messages: [
+                      {
+                            "role": "user",
+                            "content": message
+                        }
+                    ]
+                })
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                let errorMessage = `Claude API error: ${response.status}`;
+                if (errorData && errorData.error && errorData.error.message) {
+                    errorMessage += ` - ${errorData.error.message}`;
+                }
+                throw new Error(errorMessage);
+            }
+
+
+            const data = await response.json();
+            let aiResponse;
+              if (data && data.content && data.content.length > 0 && data.content[0].text) {
+                    aiResponse = data.content[0].text;
+              } else {
+                aiResponse = "No response from Claude (unexpected response format).";
+               }
+
+
+            loadingDiv.remove();
+            appendMessage(aiResponse, 'ai');
+
+        } catch (error) {
+            loadingDiv.remove();
+            console.error('Error fetching from Claude:', error);
+            appendMessage(`Error: ${error.message}`, 'ai');
+        }
+    }
+
+});
+    </script>
+</body>
+</html>

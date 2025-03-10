@@ -1,0 +1,53 @@
+name: AI Chat - Dynamic (Python Backend)
+
+on:
+  workflow_dispatch:
+    inputs:
+      ai_type:
+        description: 'The AI to use (gemini, openai, claude)'
+        required: true
+        default: 'gemini'
+      user_message:
+        description: 'The user message'
+        required: true
+
+jobs:
+  process-chat:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10' # Or another supported Python version
+
+      - name: Install dependencies
+        run: |
+          pip install requests  # For making HTTP requests
+
+      - name: Get Conversation History
+        id: get-history
+        run: |
+          if [ -f conversation_history.json ]; then
+            echo "::set-output name=history::$(cat conversation_history.json)"
+          else
+            echo "::set-output name=history::[]"  # Initialize as empty array
+          fi
+
+      - name: Process Chat Request
+        id: process
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          CLAUDE_API_KEY: ${{ secrets.CLAUDE_API_KEY }}
+        run: |
+          python -u ./process_chat.py  # Run the Python script
+
+      - name: Commit and Push Changes
+        uses: EndBug/add-and-commit@v9
+        with:
+          add: 'conversation_history.json'
+          message: 'Update conversation history'
+          push: true

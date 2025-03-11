@@ -14,6 +14,11 @@ on:
 jobs:
   process-chat:
     runs-on: ubuntu-latest
+    permissions:  # Add permissions here!
+      actions: write        # Needed to trigger workflow dispatches
+      contents: write       # Needed to read and write to the repository (conversation_history.json, index.html)
+      issues: read         # Needed for the initial strategy, can remove if not going for dynamic
+      #pull-requests: write  # If you were using PRs for comments, you'd need this.
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -44,7 +49,7 @@ jobs:
         run: |
           python -u ./process_chat.py
 
-      - name: Replace Placeholder in index.html  # <-- THIS STEP
+      - name: Replace Placeholder in index.html
         run: |
           sed -i 's/YOUR_ACTIONS_PAT_PLACEHOLDER/${{ secrets.ACTIONS_PAT }}/g' index.html
 

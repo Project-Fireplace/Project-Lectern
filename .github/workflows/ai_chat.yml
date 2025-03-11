@@ -21,20 +21,19 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.10' # Or another supported Python version
+          python-version: '3.10'
 
       - name: Install dependencies
         run: |
-          pip install requests  # For making HTTP requests
+          pip install requests
 
       - name: Get Conversation History
         id: get-history
         run: |
           if [ -f conversation_history.json ]; then
             echo "::set-output name=history::$(cat conversation_history.json)"
-          else
-            echo "::set-output name=history::[]"  # Initialize as empty array
-          fi
+          else:
+            echo "::set-output name=history::[]"
 
       - name: Process Chat Request
         id: process
@@ -43,11 +42,15 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           CLAUDE_API_KEY: ${{ secrets.CLAUDE_API_KEY }}
         run: |
-          python -u ./process_chat.py  # Run the Python script
+          python -u ./process_chat.py
+
+      - name: Replace Placeholder in index.html  # <-- THIS STEP
+        run: |
+          sed -i 's/YOUR_ACTIONS_PAT_PLACEHOLDER/${{ secrets.ACTIONS_PAT }}/g' index.html
 
       - name: Commit and Push Changes
         uses: EndBug/add-and-commit@v9
         with:
-          add: 'conversation_history.json'
-          message: 'Update conversation history'
+          add: 'conversation_history.json index.html'
+          message: 'Update conversation history and injected PAT'
           push: true

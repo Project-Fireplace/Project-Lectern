@@ -7,33 +7,46 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
     <style>
-        /* (CSS - Light/Dark, Toggle Switch - same as before, for completeness) */
         body { display: flex; min-height: 100vh; flex-direction: column; transition: background-color 0.3s ease;  }
         main { flex: 1 0 auto; padding: 20px; }
         .ai-selector { margin-bottom: 20px; }
         .chat-container { border: 1px solid #ddd; border-radius: 8px; padding: 20px; background-color: white; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); transition: background-color 0.3s ease, border-color 0.3s ease; }
         .chat-messages { max-height: 400px; overflow-y: auto; margin-bottom: 20px; padding-right: 10px; }
-        .message { margin-bottom: 10px; padding: 10px; border-radius: 5px; word-wrap: break-word; transition: background-color 0.3s ease; }
+        .message { margin-bottom: 10px; padding: 10px; border-radius: 5px; word-wrap: break-word; transition: background-color 0.3s ease;  }
         .user-message { background-color: #e0e0e0; margin-left: auto; max-width: 70%; }
         .ai-message { background-color: #f0f0f0; max-width: 70%; }
+        /* Input and button styling */
         .input-field { margin-bottom: 0; }
+        .input-field textarea {
+            border-bottom: 1px solid #9e9e9e; /* Default border */
+        }
+        .input-field textarea:focus {
+          border-bottom: 1px solid #673ab7; /* Focus border color (light) */
+          box-shadow: 0 1px 0 0 #673ab7;  /* Focus shadow (light) */
+        }
+
         .grasshopper-container { text-align: center; margin-bottom: 20px; transition: opacity: 0.5s ease-in-out; }
         .grasshopper-hidden { opacity: 0; }
-        .btn { transition: background-color 0.3s ease; }
-        .btn:hover {  }
+        .btn { transition: background-color 0.3s ease;  }
+        .btn:hover { } /* Placeholder for hover effects if needed*/
         .input-field input[type=text]:focus+label, .input-field textarea:focus+label {  }
-        .input-field input[type=text]:focus, .input-field textarea:focus {  }
+        .input-field input[type=text]:focus, .input-field textarea:focus { }
         .select-wrapper input.select-dropdown:focus {  }
+
+        /* Scrollbar styling */
         .chat-messages::-webkit-scrollbar { width: 8px; }
         .chat-messages::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; transition: background-color 0.3s ease; }
         .chat-messages::-webkit-scrollbar-thumb { background: #888; border-radius: 4px; transition: background-color 0.3s ease; }
         .chat-messages::-webkit-scrollbar-thumb:hover { background: #555; }
         #messageInput { resize: vertical; min-height: 50px; max-height: 150px; }
+
+        /* Loading animation (Optional, but good for UX) */
         .loading-dots { display: inline-block; width: 50px; text-align: left; }
         .loading-dots span { display: inline-block; width: 8px; height: 8px; border-radius: 50%;  margin: 0 2px; opacity: 0; animation: loading 1.4s infinite; }
         .loading-dots span:nth-child(2) { animation-delay: 0.2s; }
         .loading-dots span:nth-child(3) { animation-delay: 0.4s; }
         @keyframes loading { 0%, 100% { opacity: 0; } 50% { opacity: 1; } }
+
         .api-key-inputs { margin-bottom: 1rem; }
         .api-key-input { margin-bottom: 0.5rem; }
         .hidden { display: none; }
@@ -49,8 +62,9 @@
         body.light-mode nav { background-color: #673ab7; }
         body.light-mode .btn { background-color: #9575cd; }
         body.light-mode .btn:hover { background-color: #7e57c2; }
+
         body.light-mode .input-field input[type=text]:focus+label, body.light-mode .input-field textarea:focus+label { color: #673ab7 !important; }
-        body.light-mode .input-field input[type=text]:focus, body.light-mode .input-field textarea:focus { border-bottom: 1px solid #673ab7 !important; box-shadow: 0 1px 0 0 #673ab7 !important; }
+        /*body.light-mode .input-field input[type=text]:focus, body.light-mode .input-field textarea:focus { border-bottom: 1px solid #673ab7 !important; box-shadow: 0 1px 0 0 #673ab7 !important; }*/
         body.light-mode .select-wrapper input.select-dropdown:focus { border-bottom: 1px solid #673ab7 !important; box-shadow: 0 1px 0 0 #673ab7 !important; }
         body.light-mode .loading-dots span { background-color: #673ab7;}
 
@@ -59,7 +73,7 @@
         body.dark-mode { background-color: #212121; color: #eee; }
         body.dark-mode .chat-container { background-color: #424242; border-color: #616161; }
         body.dark-mode .user-message { background-color: #616161; color: #fff; }
-        body.dark-mode .ai-message { background-color: #757575; color: #fff; }
+        body.dark-mode .ai-message { background-color: #757575; color: #fff;  }
         body.dark-mode .chat-messages::-webkit-scrollbar-track { background: #424242; }
         body.dark-mode .chat-messages::-webkit-scrollbar-thumb { background: #bbb; }
         body.dark-mode .chat-messages::-webkit-scrollbar-thumb:hover { background: #999; }
@@ -67,7 +81,13 @@
         body.dark-mode .btn { background-color: #5e35b1; }
         body.dark-mode .btn:hover { background-color: #4527a0; }
         body.dark-mode .input-field input[type=text]:focus+label, body.dark-mode .input-field textarea:focus+label, body.dark-mode label { color: #9575cd !important; }
-        body.dark-mode .input-field input[type=text]:focus, body.dark-mode .input-field textarea:focus, body.dark-mode .select-wrapper input.select-dropdown:focus{ border-bottom: 1px solid #9575cd !important; box-shadow: 0 1px 0 0 #9575cd !important; }
+          /* Dark mode focus for textarea */
+        body.dark-mode .input-field textarea:focus {
+          border-bottom: 1px solid #9575cd; /* Dark mode focus border */
+          box-shadow: 0 1px 0 0 #9575cd;    /* Dark mode focus shadow */
+        }
+        body.dark-mode .select-wrapper input.select-dropdown:focus{ border-bottom: 1px solid #9575cd !important; box-shadow: 0 1px 0 0 #9575cd !important; }
+
         body.dark-mode .loading-dots span{ background-color: #9575cd;}
 
         /* --- Toggle Switch Styles --- */
@@ -105,11 +125,10 @@
 
     </style>
 </head>
-<body class="light-mode">
+<body class="light-mode">  <!-- Start in light mode -->
     <nav>
         <div class="nav-wrapper">
             <a href="#!" class="brand-logo center">AI Chat</a>
-            <!-- Added id="nav-links" and the links -->
             <ul id="nav-links" class="right">
                 <li><a href="#about"><span class="material-icons">info</span>About</a></li>
                 <li><a href="#features"><span class="material-icons">settings</span>Features</a></li>
@@ -126,6 +145,7 @@
     </nav>
     <main>
         <div class="container">
+            <!-- AI Selector -->
             <div class="row ai-selector">
                 <div class="col s12">
                     <select id="aiSelect" class="browser-default">
@@ -133,9 +153,10 @@
                         <option value="openai">OpenAI (ChatGPT)</option>
                         <option value="claude">Anthropic Claude</option>
                     </select>
-                    <label>Select AI</label>
+                    <label>Select AI</label>  <!-- Label for the select -->
                 </div>
             </div>
+            <!-- Grasshopper Icon (Hidden Initially) -->
              <div class="row">
                 <div class="col s12">
                     <div class="grasshopper-container">
@@ -144,6 +165,7 @@
                 </div>
             </div>
 
+            <!-- Chat Area -->
             <div class="row chat-container">
                 <div class="col s12 chat-messages" id="chatMessages"></div>
                 <div class="col s12">
@@ -187,6 +209,8 @@ document.addEventListener('DOMContentLoaded', function() {
         document.body.classList.toggle('dark-mode', darkModeToggle.checked);
         document.body.classList.toggle('light-mode', !darkModeToggle.checked);
         localStorage.setItem('theme', darkModeToggle.checked ? 'dark-mode' : 'light-mode');
+        //Re-renders messages upon toggle
+        getConversationHistory();
     });
 
     sendButton.addEventListener('click', sendMessage);
@@ -208,6 +232,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             appendMessage(messageText, 'user');
             messageInput.value = '';
+             messageInput.style.height = ''; // Reset textarea height
 
             // Trigger the workflow dispatch
             await triggerWorkflow(selectedAI, messageText);
@@ -277,13 +302,14 @@ async function getConversationHistory() {
         }
 
 
-        chatMessages.innerHTML = '';
+        chatMessages.innerHTML = '';  //Clear so messages dont duplicate
         history.forEach(entry => {
             appendMessage(entry.content, entry.role === 'user' ? 'user' : 'ai');
         });
 
     } catch (error) {
         console.error('Error fetching conversation history:', error);
+         // Less aggressive error message for 404s, since they're expected
         if (!error.message.includes('HTTP Error: 404')) {
              appendMessage(`Error: Could not retrieve conversation history. ${error.message}`, 'ai');
         }
@@ -292,6 +318,9 @@ async function getConversationHistory() {
 }
     // Initial fetch of conversation history
     getConversationHistory();
+
+     // Initialize Materialize components (select in this case)
+    M.FormSelect.init(aiSelect);
 
 });
     </script>

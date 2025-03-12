@@ -17,7 +17,7 @@
         .user-message { background-color: #e0e0e0; margin-left: auto; max-width: 70%; }
         .ai-message { background-color: #f0f0f0; max-width: 70%; }
         .input-field { margin-bottom: 0; }
-        .grasshopper-container { text-align: center; margin-bottom: 20px; transition: opacity 0.5s ease-in-out; }
+        .grasshopper-container { text-align: center; margin-bottom: 20px; transition: opacity: 0.5s ease-in-out; }
         .grasshopper-hidden { opacity: 0; }
         .btn { transition: background-color 0.3s ease; }
         .btn:hover {  }
@@ -78,13 +78,41 @@
         input:checked + .slider { background-color: #673ab7; }
         input:focus + .slider { box-shadow: 0 0 1px #673ab7; }
         input:checked + .slider:before { transform: translateX(26px); }
+
+        /* Nav Bar Styles */
+        #nav-links {
+            display: flex;
+            align-items: center; /* Vertically center items */
+        }
+
+        #nav-links li {
+            margin-left: 15px; /* Spacing between items */
+        }
+
+        #nav-links a {
+           display: flex; /* Make the links flex containers */
+           align-items: center; /* Center items vertically within the link */
+           color: white;
+           text-decoration: none;
+
+        }
+        #nav-links span.material-icons{
+            margin-right: 5px;
+        }
+
     </style>
 </head>
 <body class="light-mode">
     <nav>
         <div class="nav-wrapper">
             <a href="#!" class="brand-logo center">AI Chat</a>
-            <ul class="right">
+            <!-- Added id="nav-links" and the links -->
+             <ul id="nav-links" class="right">
+                <li><a href="#about"><span class="material-icons">info</span>About</a></li>
+                <li><a href="#features"><span class="material-icons">settings</span>Features</a></li>
+                <li><a href="#gallery"><span class="material-icons">photo_library</span>Gallery</a></li>
+                <li><a href="https://project-fireplace.github.io/website/sitemap/map.html"><span class="material-icons">map</span>Site Map</a></li>
+                <li><a href="contact/contact.html"><span class="material-icons">contact_mail</span>Contact</a></li>
                 <li>
                     <div class="switch">
                         <label>Light<input type="checkbox" id="darkModeToggle"><span class="slider"></span>Dark</label>
